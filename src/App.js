@@ -1,28 +1,30 @@
-import React, { useEffect, useState } from "react";
-import useDatabaseApi from "./hooks/use-databaseapi";
-import Tasks from "./components/Tasks/Tasks";
-import NewTask from "./components/NewTask/NewTask";
+import React, { useEffect, useState } from 'react';
+
+import Tasks from './components/Tasks/Tasks';
+import NewTask from './components/NewTask/NewTask';
+import useDatabaseApi from './hooks/use-databaseapi';
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const TransformTasks = (tasks) => {
-    const loadedTasks = [];
 
-    for (const taskKey in tasks) {
-      loadedTasks.push({ id: taskKey, text: tasks[taskKey].text });
-    }
+  const { isLoading, error, sendRequest: fetchTasks } = useDatabaseApi();
 
-    setTasks(loadedTasks);
-  };
-
-  const {isLoading , error , sendRequest: fetchTasks} = useDatabaseApi({
-    url: "https://react-post-request-practice-default-rtdb.firebaseio.com/tasks.json",
-    TransformTasks,
-  });
-  console.log(fetchTasks)
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    const transformTasks = (tasksObj) => {
+      const loadedTasks = [];
+
+      for (const taskKey in tasksObj) {
+        loadedTasks.push({ id: taskKey, text: tasksObj[taskKey].text });
+      }
+
+      setTasks(loadedTasks);
+    };
+
+    fetchTasks(
+      { url: 'https://react-post-request-practice-default-rtdb.firebaseio.com/tasks.json' },
+      transformTasks
+    );
+  }, [fetchTasks]);
 
   const taskAddHandler = (task) => {
     setTasks((prevTasks) => prevTasks.concat(task));
